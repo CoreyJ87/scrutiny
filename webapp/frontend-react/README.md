@@ -4,14 +4,14 @@ Modern React 19 frontend for Scrutiny, rewritten from Angular.
 
 ## Tech Stack
 
-- **React 19** + TypeScript 5.7
+- **React 19** + TypeScript 5.9
 - **Vite 7** - Lightning fast build tool
 - **TailwindCSS 4** - Utility-first CSS
 - **shadcn/ui** - Beautiful, accessible components
 - **TanStack Query v5** - Powerful data fetching
 - **TanStack Router v1** - Type-safe routing
 - **ApexCharts** - Interactive charts
-- **Vitest** - Fast unit testing
+- **Vitest** - Fast unit testing with coverage
 - **pnpm** - Fast, disk-efficient package manager
 
 ## Development
@@ -28,6 +28,15 @@ pnpm build
 
 # Run tests
 pnpm test
+
+# Run tests once (CI)
+pnpm test:run
+
+# Run tests with coverage
+pnpm test:coverage
+
+# Lint
+pnpm lint
 
 # Preview production build
 pnpm preview
@@ -60,27 +69,49 @@ docker run -p 8080:8080 scrutiny-web
 ```
 src/
 ├── api/                # API client functions
-│   ├── client.ts      # Axios configuration
-│   ├── dashboard.ts   # Dashboard endpoints
-│   ├── device.ts      # Device endpoints
-│   ├── settings.ts    # Settings endpoints
-│   └── query.ts       # TanStack Query setup
+│   ├── client.ts       # Axios configuration
+│   ├── dashboard.ts    # Dashboard endpoints
+│   ├── device.ts       # Device endpoints
+│   ├── settings.ts     # Settings endpoints
+│   ├── query.ts        # TanStack Query setup
+│   └── index.ts        # Exports
 ├── components/         # React components
-│   ├── ui/            # shadcn/ui components
-│   ├── dashboard/     # Dashboard-specific
-│   ├── detail/        # Device detail
-│   └── layout/        # Layout components
-├── hooks/             # Custom React hooks
-├── models/            # TypeScript interfaces
-│   ├── measurements/  # SMART data models
-│   └── thresholds/    # Threshold models
-├── pages/             # Route pages
-├── routes/            # TanStack Router config
-├── types/             # Type definitions
-├── utils/             # Utility functions
-├── config.ts          # App configuration
-├── main.tsx           # App entry point
-└── index.css          # Global styles
+│   ├── ui/             # shadcn/ui components
+│   ├── dashboard/      # Dashboard-specific
+│   ├── detail/         # Device detail
+│   └── layout/         # Layout components
+├── config/             # App configuration
+│   ├── defaults.ts     # Default settings
+│   └── index.ts        # Exports
+├── constants/          # Constant values
+│   ├── device-status.ts # Device/attribute status codes
+│   ├── metrics.ts      # Metrics thresholds
+│   └── index.ts        # Exports
+├── hooks/              # Custom React hooks
+│   ├── useAppConfig.ts # App configuration hook
+│   ├── useDashboard.ts # Dashboard data hook
+│   └── useDeviceDetail.ts # Device detail hook
+├── models/             # TypeScript interfaces
+│   ├── measurements/   # SMART data models
+│   └── thresholds/     # Threshold models
+├── pages/              # Route pages
+│   ├── Dashboard.tsx   # Main dashboard
+│   └── DeviceDetail.tsx # Device detail view
+├── routes/             # TanStack Router config
+├── test/               # Test files
+│   ├── setup.ts        # Vitest setup
+│   └── *.test.ts       # Unit tests
+├── types/              # Type definitions
+│   ├── api.ts          # API response types
+│   └── settings.ts     # Settings types
+├── utils/              # Utility functions
+│   ├── device-*.ts     # Device utilities
+│   ├── temperature.ts  # Temperature conversion
+│   ├── file-size.ts    # File size formatting
+│   └── export.ts       # Export functionality
+├── version.ts          # Auto-generated version info
+├── main.tsx            # App entry point
+└── index.css           # Global styles
 ```
 
 ## Key Differences from Angular Version
@@ -121,6 +152,10 @@ The frontend expects the Scrutiny backend API at `/api/`.
 - `POST /api/settings` - Update settings
 - `POST /api/device/:wwn/archive` - Archive device
 - `DELETE /api/device/:wwn` - Delete device
+
+## Version Information
+
+The `src/version.ts` file is auto-generated during CI/CD builds via `git.version.sh`. For local development, it defaults to `'development'`.
 
 ## Contributing
 
