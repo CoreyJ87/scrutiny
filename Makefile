@@ -91,26 +91,31 @@ ifneq ($(OS),Windows_NT)
 endif
 
 ########################################################################################################################
-# Binary
+# Frontend (React)
 ########################################################################################################################
 
 .PHONY: binary-frontend
-# reduce logging, disable angular-cli analytics for ci environment
-binary-frontend: export NPM_CONFIG_LOGLEVEL = warn
-binary-frontend: export NG_CLI_ANALYTICS = false
 binary-frontend:
-	cd webapp/frontend
-	npm install -g @angular/cli@v13-lts
+	cd webapp/frontend-react
+	npm install -g pnpm
 	mkdir -p $(CURDIR)/dist
-	npm ci
-	npm run build:prod -- --output-path=$(CURDIR)/dist
+	pnpm install --frozen-lockfile
+	pnpm run build
+	cp -r dist/* $(CURDIR)/dist/
+
+.PHONY: binary-frontend-test
+binary-frontend-test:
+	cd webapp/frontend-react
+	npm install -g pnpm
+	pnpm install --frozen-lockfile
+	pnpm run test:run
 
 .PHONY: binary-frontend-test-coverage
-# reduce logging, disable angular-cli analytics for ci environment
 binary-frontend-test-coverage:
-	cd webapp/frontend
-	npm ci
-	npx ng test --watch=false --browsers=ChromeHeadless --code-coverage
+	cd webapp/frontend-react
+	npm install -g pnpm
+	pnpm install --frozen-lockfile
+	pnpm run test:coverage
 
 ########################################################################################################################
 # Docker
