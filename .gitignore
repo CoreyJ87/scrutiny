@@ -81,3 +81,4 @@ PLANNING.md
 collector-dev
 collector-metrics
 scrutiny-dev
+build-and-push-dev.sh

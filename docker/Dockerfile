@@ -4,15 +4,26 @@
 ########################################################################################################################
 
 ######## Build the frontend
-FROM --platform=${BUILDPLATFORM} node AS frontendbuild
+FROM --platform=${BUILDPLATFORM} node:24-bookworm AS frontendbuild
 WORKDIR /go/src/github.com/analogj/scrutiny
 COPY --link . /go/src/github.com/analogj/scrutiny
 
-RUN make binary-frontend
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Build React frontend
+WORKDIR /go/src/github.com/analogj/scrutiny/webapp/frontend-react
+ENV CI=true
+RUN pnpm install --frozen-lockfile
+RUN pnpm build
+
+# Move build output to expected location
+RUN mkdir -p /go/src/github.com/analogj/scrutiny/dist && \
+    cp -r dist/* /go/src/github.com/analogj/scrutiny/dist/
 
 
 ######## Build the backend
-FROM golang:1.20-bookworm as backendbuild
+FROM golang:1.25-bookworm as backendbuild
 
 WORKDIR /go/src/github.com/analogj/scrutiny
 COPY --link . /go/src/github.com/analogj/scrutiny
