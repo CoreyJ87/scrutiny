@@ -5,9 +5,9 @@ Modern React 19 frontend for Scrutiny, rewritten from Angular.
 ## Tech Stack
 
 - **React 19** + TypeScript 5.9
-- **Vite 7** - Lightning fast build tool
-- **TailwindCSS 4** - Utility-first CSS
-- **shadcn/ui** - Beautiful, accessible components
+- **Vite 7** - Fast build tool
+- **TailwindCSS 4** - CSS
+- **shadcn/ui** - UI Components
 - **TanStack Query v5** - Powerful data fetching
 - **TanStack Router v1** - Type-safe routing
 - **ApexCharts** - Interactive charts
@@ -54,15 +54,9 @@ docker-compose -f docker-compose.react-dev.yaml up --build
 # Backend API at http://localhost:8080
 ```
 
-### Production build:
+### Production:
 
-The React frontend is built as static files and embedded into the Go backend binary. See `docker/Dockerfile.web` for the multi-stage build process.
-
-```bash
-# From the scrutiny root directory
-docker build -f docker/Dockerfile.web -t scrutiny-web .
-docker run -p 8080:8080 scrutiny-web
-```
+The React frontend is built as static files and embedded into the Go backend. In production, use the official Scrutiny Docker images which include both the backend and frontend.
 
 ## Project Structure
 
@@ -123,8 +117,8 @@ src/
 - **No Pipes** - Utility functions instead
 
 ### Improved DX
-- **Faster builds** - Vite vs Webpack (10x faster)
-- **Smaller bundles** - 107KB gzipped vs ~500KB
+- **Faster builds** - Vite vs Webpack (~10x faster)
+- **Smaller codebase** - ~6,400 lines vs Angular's larger footprint
 - **Hot reload** - Instant updates during development
 - **Better types** - Full TypeScript inference
 
@@ -136,22 +130,6 @@ src/
 - ✅ Archive/export functionality
 - ✅ Same API integration
 - ✅ Identical visual design
-
-## API Integration
-
-The frontend expects the Scrutiny backend API at `/api/`. 
-
-- **Production**: Static files are served by the Go backend, which also handles API routes
-- **Development**: Vite dev server runs on port 4200, proxies API requests to backend on port 8080
-
-### Key Endpoints
-- `GET /api/summary` - Dashboard device summary
-- `GET /api/summary/temp?duration_key=week` - Temperature history
-- `GET /api/device/:wwn` - Device details
-- `GET /api/settings` - Application settings
-- `POST /api/settings` - Update settings
-- `POST /api/device/:wwn/archive` - Archive device
-- `DELETE /api/device/:wwn` - Delete device
 
 ## Version Information
 
