@@ -136,3 +136,4 @@ jobs:
           path: |
             scrutiny-web-*
             scrutiny-collector-metrics-*
+            scrutiny-collector-zfs-*
