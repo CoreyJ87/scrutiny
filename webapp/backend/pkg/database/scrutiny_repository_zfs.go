@@ -190,7 +190,7 @@ func (sr *scrutinyRepository) DeleteZFSPool(ctx context.Context, guid string) er
 	return nil
 }
 
-// GetZFSPoolsSummary returns a summary of all non-archived ZFS pools
+// GetZFSPoolsSummary returns a summary of all non-archived ZFS pools with vdevs
 func (sr *scrutinyRepository) GetZFSPoolsSummary(ctx context.Context) (map[string]*models.ZFSPool, error) {
 	pools, err := sr.GetZFSPools(ctx)
 	if err != nil {
@@ -199,6 +199,20 @@ func (sr *scrutinyRepository) GetZFSPoolsSummary(ctx context.Context) (map[strin
 
 	summary := make(map[string]*models.ZFSPool)
 	for i := range pools {
+		// Load vdevs for each pool
+		var vdevs []models.ZFSVdev
+		if err := sr.gormClient.WithContext(ctx).Where("pool_guid = ? AND parent_id IS NULL", pools[i].GUID).Find(&vdevs).Error; err != nil {
+			return nil, err
+		}
+
+		// Load children recursively for each vdev
+		for j := range vdevs {
+			if err := sr.loadVdevChildren(ctx, &vdevs[j]); err != nil {
+				return nil, err
+			}
+		}
+
+		pools[i].Vdevs = vdevs
 		summary[pools[i].GUID] = &pools[i]
 	}
 

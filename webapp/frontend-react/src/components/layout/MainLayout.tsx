@@ -55,6 +55,26 @@ export function MainLayout() {
                 />
               </Link>
 
+              {/* Navigation Links */}
+              {!isScreenSmall && (
+                <nav className="nav-links ml-8 flex gap-6">
+                  <Link 
+                    to="/dashboard" 
+                    className="nav-link text-sm font-medium hover:text-primary transition-colors"
+                    activeProps={{ className: 'text-primary font-semibold' }}
+                  >
+                    S.M.A.R.T
+                  </Link>
+                  <Link 
+                    to="/zfs-pools" 
+                    className="nav-link text-sm font-medium hover:text-primary transition-colors"
+                    activeProps={{ className: 'text-primary font-semibold' }}
+                  >
+                    ZFS Pools
+                  </Link>
+                </nav>
+              )}
+
               {/* Spacer */}
               <div className="spacer"></div>
               

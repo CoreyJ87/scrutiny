@@ -2,4 +2,5 @@
 export * from './settings';
 export * from './dashboard';
 export * from './device';
+export * from './zfs';
 

@@ -1,7 +1,9 @@
 // Mock data for demo mode
 import type { DeviceSummaryModel } from '@/models/device-summary-model';
+import type { ZFSPoolModel } from './models/zfs-pool-model';
 
 const DEMO_DEVICES_KEY = 'scrutiny_demo_devices';
+const DEMO_ZFS_POOLS_KEY = 'scrutiny_demo_zfs_pools';
 
 // Generate temperature history (last 30 days, one reading per day)
 function generateTempHistory(baseTemp: number, variance: number = 5): { date: string; temp: number }[] {
@@ -221,6 +223,188 @@ export const MOCK_APP_CONFIG = {
   },
   collector: {
     retrieve_sct_temperature_history: false,
+  },
+};
+
+// Generate capacity history for ZFS pools
+function generateCapacityHistory(baseCapacity: number, variance: number = 2): { date: string; size: number; allocated: number; free: number; capacity_percent: number; fragmentation: number; status: string }[] {
+  const history = [];
+  const now = new Date();
+  const poolSize = 8000000000000; // 8TB
+  
+  for (let i = 30; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const capacityVariance = Math.floor(Math.random() * variance * 2) - variance;
+    const capacity = Math.max(30, Math.min(95, baseCapacity + capacityVariance));
+    const allocated = Math.floor((poolSize * capacity) / 100);
+    const free = poolSize - allocated;
+    
+    history.push({
+      date: date.toISOString(),
+      size: poolSize,
+      allocated,
+      free,
+      capacity_percent: capacity,
+      fragmentation: Math.floor(Math.random() * 10) + 5, // 5-15%
+      status: 'ONLINE',
+    });
+  }
+  return history;
+}
+
+// Mock ZFS Pool Summary
+export const MOCK_ZFS_POOL_SUMMARY: Record<string, ZFSPoolModel> = {
+  'tank-guid-12345': {
+      guid: 'tank-guid-12345',
+      name: 'tank',
+      host_id: 'nas',
+      label: 'Main Storage Pool',
+      archived: false,
+      muted: false,
+      status: 'ONLINE',
+      size: 8000000000000, // 8TB
+      allocated: 5200000000000, // 5.2TB used
+      free: 2800000000000, // 2.8TB free
+      fragmentation: 8,
+      capacity_percent: 65.0,
+      scrub_state: 'finished',
+      scrub_start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      scrub_end: new Date(Date.now() - 6.9 * 24 * 60 * 60 * 1000).toISOString(),
+      scrub_percent: 100,
+      scrub_errors: 0,
+      total_read_errors: 0,
+      total_write_errors: 0,
+      total_checksum_errors: 0,
+      vdevs: [
+        {
+          id: 1,
+          pool_guid: 'tank-guid-12345',
+          name: 'tank',
+          type: 'mirror',
+          status: 'ONLINE',
+          path: '',
+          read_errors: 0,
+          write_errors: 0,
+          checksum_errors: 0,
+          created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+          children: [
+            {
+              id: 2,
+              pool_guid: 'tank-guid-12345',
+              parent_id: 1,
+              name: 'sda',
+              type: 'disk',
+              status: 'ONLINE',
+              path: '/dev/sda',
+              read_errors: 0,
+              write_errors: 0,
+              checksum_errors: 0,
+              created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            {
+              id: 3,
+              pool_guid: 'tank-guid-12345',
+              parent_id: 1,
+              name: 'sdb',
+              type: 'disk',
+              status: 'ONLINE',
+              path: '/dev/sdb',
+              read_errors: 0,
+              write_errors: 0,
+              checksum_errors: 0,
+              created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ],
+        },
+      ],
+    created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  'backup-guid-67890': {
+      guid: 'backup-guid-67890',
+      name: 'backup',
+      host_id: 'nas',
+      label: '',
+      archived: false,
+      muted: false,
+      status: 'DEGRADED',
+      size: 12000000000000, // 12TB
+      allocated: 10200000000000, // 10.2TB used
+      free: 1800000000000, // 1.8TB free
+      fragmentation: 15,
+      capacity_percent: 85.0,
+      scrub_state: 'scanning',
+      scrub_start: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      scrub_end: '',
+      scrub_percent: 42.5,
+      scrub_errors: 3,
+      total_read_errors: 3,
+      total_write_errors: 0,
+      total_checksum_errors: 1,
+      vdevs: [
+        {
+          id: 4,
+          pool_guid: 'backup-guid-67890',
+          name: 'backup',
+          type: 'raidz1',
+          status: 'DEGRADED',
+          path: '',
+          read_errors: 3,
+          write_errors: 0,
+          checksum_errors: 1,
+          created_at: new Date(Date.now() - 500 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+          children: [
+            {
+              id: 5,
+              pool_guid: 'backup-guid-67890',
+              parent_id: 4,
+              name: 'sdc',
+              type: 'disk',
+              status: 'ONLINE',
+              path: '/dev/sdc',
+              read_errors: 0,
+              write_errors: 0,
+              checksum_errors: 0,
+              created_at: new Date(Date.now() - 500 * 24 * 60 * 60 * 1000).toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            {
+              id: 6,
+              pool_guid: 'backup-guid-67890',
+              parent_id: 4,
+              name: 'sdd',
+              type: 'disk',
+              status: 'DEGRADED',
+              path: '/dev/sdd',
+              read_errors: 3,
+              write_errors: 0,
+              checksum_errors: 1,
+              created_at: new Date(Date.now() - 500 * 24 * 60 * 60 * 1000).toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            {
+              id: 7,
+              pool_guid: 'backup-guid-67890',
+              parent_id: 4,
+              name: 'sde',
+              type: 'disk',
+              status: 'ONLINE',
+              path: '/dev/sde',
+              read_errors: 0,
+              write_errors: 0,
+              checksum_errors: 0,
+              created_at: new Date(Date.now() - 500 * 24 * 60 * 60 * 1000).toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ],
+        },
+      ],
+    created_at: new Date(Date.now() - 500 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date().toISOString(),
   },
 };
 
@@ -618,3 +802,92 @@ export function demoSetDeviceLabel(wwn: string, label: string) {
   }
 }
 
+// ========== ZFS Pool Demo Functions ==========
+
+// Get ZFS pools from localStorage or use defaults
+export function getDemoZFSPools(): Record<string, ZFSPoolModel> {
+  const stored = localStorage.getItem(DEMO_ZFS_POOLS_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return { ...MOCK_ZFS_POOL_SUMMARY };
+    }
+  }
+  return { ...MOCK_ZFS_POOL_SUMMARY };
+}
+
+// Save ZFS pools to localStorage
+function saveDemoZFSPools(pools: Record<string, ZFSPoolModel>) {
+  localStorage.setItem(DEMO_ZFS_POOLS_KEY, JSON.stringify(pools));
+}
+
+// Archive a ZFS pool
+export function demoArchiveZFSPool(guid: string) {
+  const pools = getDemoZFSPools();
+  if (pools[guid]) {
+    pools[guid].archived = true;
+    saveDemoZFSPools(pools);
+  }
+}
+
+// Unarchive a ZFS pool
+export function demoUnarchiveZFSPool(guid: string) {
+  const pools = getDemoZFSPools();
+  if (pools[guid]) {
+    pools[guid].archived = false;
+    saveDemoZFSPools(pools);
+  }
+}
+
+// Mute a ZFS pool
+export function demoMuteZFSPool(guid: string) {
+  const pools = getDemoZFSPools();
+  if (pools[guid]) {
+    pools[guid].muted = true;
+    saveDemoZFSPools(pools);
+  }
+}
+
+// Unmute a ZFS pool
+export function demoUnmuteZFSPool(guid: string) {
+  const pools = getDemoZFSPools();
+  if (pools[guid]) {
+    pools[guid].muted = false;
+    saveDemoZFSPools(pools);
+  }
+}
+
+// Delete a ZFS pool
+export function demoDeleteZFSPool(guid: string) {
+  const pools = getDemoZFSPools();
+  delete pools[guid];
+  saveDemoZFSPools(pools);
+}
+
+// Set ZFS pool label
+export function demoSetZFSPoolLabel(guid: string, label: string) {
+  const pools = getDemoZFSPools();
+  if (pools[guid]) {
+    pools[guid].label = label;
+    saveDemoZFSPools(pools);
+  }
+}
+
+// Generate mock ZFS pool details with capacity history
+export function generateMockZFSPoolDetails(guid: string) {
+  const pool = getDemoZFSPools()[guid];
+  if (!pool) {
+    // Fallback to first pool if guid not found
+    const firstGuid = Object.keys(MOCK_ZFS_POOL_SUMMARY)[0];
+    return {
+      pool: MOCK_ZFS_POOL_SUMMARY[firstGuid],
+      metrics_history: generateCapacityHistory(65, 3),
+    };
+  }
+  
+  return {
+    pool: pool,
+    metrics_history: generateCapacityHistory(pool.capacity_percent, 3),
+  };
+}
