@@ -4,15 +4,26 @@
 ########################################################################################################################
 
 ######## Build the frontend
-FROM --platform=${BUILDPLATFORM} node AS frontendbuild
+FROM --platform=${BUILDPLATFORM} node:24-bookworm AS frontendbuild
 WORKDIR /go/src/github.com/analogj/scrutiny
 COPY --link . /go/src/github.com/analogj/scrutiny
 
-RUN make binary-frontend
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Build React frontend
+WORKDIR /go/src/github.com/analogj/scrutiny/webapp/frontend-react
+ENV CI=true
+RUN pnpm install --frozen-lockfile
+RUN pnpm build
+
+# Move build output to expected location
+RUN mkdir -p /go/src/github.com/analogj/scrutiny/dist && \
+    cp -r dist/* /go/src/github.com/analogj/scrutiny/dist/
 
 
 ######## Build the backend
-FROM golang:1.20-bookworm as backendbuild
+FROM golang:1.25-bookworm as backendbuild
 
 WORKDIR /go/src/github.com/analogj/scrutiny
 COPY --link . /go/src/github.com/analogj/scrutiny
@@ -31,7 +42,7 @@ WORKDIR /opt/scrutiny
 ENV PATH="/opt/scrutiny/bin:${PATH}"
 ENV INFLUXD_CONFIG_PATH=/opt/scrutiny/influxdb
 ENV S6VER="3.1.6.2"
-ENV INFLUXVER="2.2.0"
+ENV INFLUXVER="2.9.1"
 ENV S6_SERVICES_READYTIME=1000
 SHELL ["/usr/bin/sh", "-c"]
 
@@ -56,15 +67,15 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive \
     && curl https://github.com/just-containers/s6-overlay/releases/download/v${S6VER}/s6-overlay-${S6_ARCH}.tar.xz -L -s --output /tmp/s6-overlay-${S6_ARCH}.tar.xz \
     && tar -Jxpf /tmp/s6-overlay-${S6_ARCH}.tar.xz -C / \
     && rm -rf /tmp/s6-overlay-${S6_ARCH}.tar.xz
-RUN curl -L https://dl.influxdata.com/influxdb/releases/influxdb2-${INFLUXVER}-${TARGETARCH}.deb --output /tmp/influxdb2-${INFLUXVER}-${TARGETARCH}.deb \
-    && dpkg -i --force-all /tmp/influxdb2-${INFLUXVER}-${TARGETARCH}.deb \
-    && rm -rf /tmp/influxdb2-${INFLUXVER}-${TARGETARCH}.deb
+RUN curl -L https://dl.influxdata.com/influxdb/releases/influxdb2_${INFLUXVER}-1_${TARGETARCH}.deb --output /tmp/influxdb2_${INFLUXVER}-1_${TARGETARCH}.deb \
+    && dpkg -i --force-all /tmp/influxdb2_${INFLUXVER}-1_${TARGETARCH}.deb \
+    && rm -rf /tmp/influxdb2_${INFLUXVER}-1_${TARGETARCH}.deb
 
 COPY /rootfs /
 
 COPY --link --from=backendbuild --chmod=755 /go/src/github.com/analogj/scrutiny/scrutiny /opt/scrutiny/bin/
 COPY --link --from=backendbuild --chmod=755 /go/src/github.com/analogj/scrutiny/scrutiny-collector-metrics /opt/scrutiny/bin/
-COPY --link --from=frontendbuild --chmod=644 /go/src/github.com/analogj/scrutiny/webapp/frontend/dist/treo/browser /opt/scrutiny/web
+COPY --link --from=frontendbuild --chmod=755 /go/src/github.com/analogj/scrutiny/dist /opt/scrutiny/web
 RUN chmod 0644 /etc/cron.d/scrutiny && \
     rm -f /etc/cron.daily/* && \
     mkdir -p /opt/scrutiny/web && \

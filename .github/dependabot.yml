@@ -16,9 +16,9 @@ updates:
     commit-message:
       prefix: "chore(deps)"
 
-  # npm (frontend)
+  # pnpm (frontend)
   - package-ecosystem: "npm"
-    directory: "/webapp/frontend"
+    directory: "/webapp/frontend-react"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -30,10 +30,17 @@ updates:
       prefix: "chore(deps)"
     # Group minor and patch updates to reduce PR noise
     groups:
-      angular:
+      react:
         patterns:
-          - "@angular/*"
-          - "@angular-devkit/*"
+          - "react"
+          - "react-dom"
+          - "@types/react*"
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      tanstack:
+        patterns:
+          - "@tanstack/*"
       dev-dependencies:
         dependency-type: "development"
         update-types:
