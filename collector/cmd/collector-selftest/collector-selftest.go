@@ -57,7 +57,7 @@ OPTIONS:
 
 			subtitle := collectorSelfTest + utils.LeftPad2Len(versionInfo, " ", 65-len(collectorSelfTest))
 
-			color.New(color.FgGreen).Fprintf(c.App.Writer, fmt.Sprintf(utils.StripIndent(
+			color.New(color.FgGreen).Fprint(c.App.Writer, fmt.Sprintf(utils.StripIndent(
 				`
 			 ___   ___  ____  __  __  ____  ____  _  _  _  _
 			/ __) / __)(  _ \(  )(  )(_  _)(_  _)( \( )( \/ )
